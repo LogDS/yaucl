@@ -45,7 +45,7 @@ add_library(yaucl_learning OBJECT
 )
 target_link_libraries(yaucl_learning yaucl_data)
 
-add_library(yaucl_ndp OBJECT RocksDBMap.cpp RocksDBMap.h)
+add_library(yaucl_ndp OBJECT src/yaucl/data/RocksDBMap.cpp include/yaucl/data/RocksDBMap.h)
 target_link_libraries(yaucl_ndp snappy bz2  z rt ${ROCKSDB_STATIC_LIB})
 
 #add_library(yaucl_learning OBJECT
