@@ -42,6 +42,7 @@ enum graph_cases {
 };
 
 struct adjacency_graph {
+    std::string empty_string;
     static std::vector<size_t> empty_vector;
     enum graph_cases casusu;
     size_t V_size, E_size;

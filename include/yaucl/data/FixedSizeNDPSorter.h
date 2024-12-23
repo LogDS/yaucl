@@ -18,6 +18,7 @@
 #ifdef max
 #undef max
 #endif
+#include <unordered_map>
 
 template <typename T, typename Comparator = std::less<T>> class FixedSizeNDPSorter {
     size_t runs_size;

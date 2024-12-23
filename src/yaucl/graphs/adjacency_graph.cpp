@@ -223,7 +223,7 @@ double edge_cost(const adjacency_graph *graph, size_t edge_id) {
 const std::string &node_label(const adjacency_graph *graph, size_t node_id) {
     assert(node_id < graph->V_size);
     if (graph->casusu == ADJACENCY_GRAPH_CASE) {
-        return "";
+        return graph->empty_string;
     } else {
         return ((weigthed_labelled_automata*)graph)->node_label.at(node_id);
     }
@@ -350,6 +350,7 @@ bool remove_node(adjacency_graph *graph, size_t node_id) {
         for (size_t edge_id : ref) remove_edge(graph, edge_id);
     }
     graph->removed_nodes.insert(node_id);
+    return true;
 }
 
 size_t add_node(adjacency_graph *graph, const std::string& label) {

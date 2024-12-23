@@ -103,7 +103,7 @@ size_t RoaringBitmapWrapper::hashCode() const {
     size_t seed = 13;
     for (size_t i = 0; i<N; i++)
         seed = yaucl::hashing::combine(seed, ans[i]);
-    delete ans;
+    delete[] ans;
     return seed;
 }
 
