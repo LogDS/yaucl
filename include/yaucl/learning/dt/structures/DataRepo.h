@@ -135,7 +135,7 @@ struct DataRepo {
         for (const auto& var : vars) {
             // The extention for these operand types comes from the paper
             // of dtControl: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
-            for (size_t i = 0, N = (size_t)operand_type::LN; i<N; i++) {
+            for (size_t i = 0, N = (size_t)operand_type::LN; i<=N; i++) {
                 auto obj = (operand_type)i;
                 auto result = sortOnSelectedNumericField(var, begin, end, obj);
                 if (result.second > choice.second) {

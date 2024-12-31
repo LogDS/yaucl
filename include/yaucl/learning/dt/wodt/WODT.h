@@ -8,7 +8,7 @@
 #ifndef DT_WODT_H
 #define DT_WODT_H
 
-#include "lbfgsb.h"
+#include <lbfgsb.h>
 
 static inline double sigmoid(double z) {
     if (z<-500) z=-500;

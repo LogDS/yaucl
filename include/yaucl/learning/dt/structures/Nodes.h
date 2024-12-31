@@ -34,9 +34,11 @@ struct Nodes {
     size_t rightOffset, split;
     std::pair<dt_predicate,double> candidate;
 
+
     Nodes(size_t begin, size_t end, size_t max_height);
 
     bool isLeaf;
+    std::vector<dt_predicate> leaf_class_result;
     int majority_class;
     double majority_class_precision;
     size_t max_height;

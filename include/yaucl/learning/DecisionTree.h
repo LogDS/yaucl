@@ -44,17 +44,28 @@ struct DecisionTree {
     }
 
 
-    void splitTree();
+    void splitTree(bool dooblique = true);
 
-    void populate_children_predicates2(std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred) const {
+    void populate_children_predicates2(std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred) /*const*/ {
         std::vector<dt_predicate> memo;
         populate_children_predicates2(0, decision_to_pred, memo);
     }
 
+    /**
+     * This calculates the prediction of the current node by traversing the tree.
+     * The resulting node provides the expected class, the expected correctness of the
+     * prediction, as well as the predicate associated to the current element (if
+     * the tree was previously run with populate_children_predicates2!)
+     *
+     * @param record Record to test
+     * @return       Leaf node containing the classification outcome
+     */
+    const Nodes* prediction(const std::vector<std::pair<std::string,union_minimal>>& record) const;
+
 private:
     void populate_children_predicates2(size_t nodeid,
                                        std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred,
-                                       std::vector<dt_predicate>& current_stack) const;
+                                       std::vector<dt_predicate>& current_stack) /*const*/;
 };
 
 

@@ -5,7 +5,7 @@
 #include <yaucl/learning/DecisionTree.h>
 
 
-void DecisionTree::splitTree() {
+void DecisionTree::splitTree(bool dooblique) {
     /**
      * This implementation follows the lead of the following BuildTree function from the following repository:
      * https://github.com/christophmeyer/twigy/blob/master/src/core/decision_tree.cpp
@@ -65,7 +65,9 @@ SOFTWARE.
 
                 dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate);
                 dr.sortOnSelectedCategoricalField(categorical, node.begin, node.end, node.candidate);
-                dr.sortOnSelectedObliquity(numerical, node.begin, node.end, node.candidate, 10);
+
+                if (dooblique)
+                    dr.sortOnSelectedObliquity(numerical, node.begin, node.end, node.candidate, 10);
 
                 if (node.candidate.second == -1) {
                     terminate = true;
@@ -76,8 +78,8 @@ SOFTWARE.
                     auto it2 = std::stable_partition(beg,
                                                      end,
                                                      [&node,this](const size_t& obj) {
-                                                         if (!(this->dr.records[obj][this->dr.fieldOffset[obj]].first == node.candidate.first.field))
-                                                             exit(199);
+//                                                         if (!(this->dr.records[obj][this->dr.fieldOffset[obj]].first == node.candidate.first.field))
+//                                                             exit(199);
                                                          return node.candidate.first(this->dr.records[obj][this->dr.fieldOffset[obj]].second);
                                                      });
                     if ((it2 == beg) || (it2 == end)) {
@@ -114,7 +116,7 @@ SOFTWARE.
 
 void DecisionTree::populate_children_predicates2(size_t nodeid,
                                    std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred,
-                                   std::vector<dt_predicate>& current_stack) const {
+                                   std::vector<dt_predicate>& current_stack) /*const*/ {
     auto& node = children[nodeid];
     if (!node.isLeaf) {
         const auto sat_ptr = children[nodeid+1];
@@ -148,6 +150,22 @@ void DecisionTree::populate_children_predicates2(size_t nodeid,
             populate_children_predicates2(nodeid+1,decision_to_pred, current_stack);
         }
     } else {
-        decision_to_pred[children[nodeid].majority_class].emplace_back(children[nodeid].majority_class_precision, current_stack);
+        auto& ref = children[nodeid];
+        ref.leaf_class_result = current_stack;
+        decision_to_pred[ref.majority_class].emplace_back(ref.majority_class_precision, current_stack);
     }
+}
+
+const Nodes* DecisionTree::prediction(const std::vector<std::pair<std::string,union_minimal>>& record) const {
+    size_t nodeid = 0;
+    const auto* node = &children[nodeid];
+    while (!node->isLeaf) {
+        if (node->candidate.first(record)) {
+            nodeid = node->rightOffset;
+        } else {
+            nodeid = nodeid+1;
+        }
+        node = &children[nodeid];
+    }
+    return node;
 }
