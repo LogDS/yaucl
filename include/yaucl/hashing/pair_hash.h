@@ -23,8 +23,8 @@
 //
 // Created by giacomo on 14/11/20.
 //
-#ifndef CLASSIFIERS_PAIR_HASH_H
-#define CLASSIFIERS_PAIR_HASH_H
+#ifndef CLASSIFIERS_PAIR_HASH_H2
+#define CLASSIFIERS_PAIR_HASH_H2
 
 #include <yaucl/hashing/hash_combine.h>
 #include <utility>
@@ -33,6 +33,8 @@ namespace std {
     template <typename T, typename K>
     struct hash<std::pair<T, K>>
     {
+        virtual ~hash<std::pair<T, K>>() {}
+
         std::size_t operator()(const std::pair<T, K>& k) const
         {
             size_t init = 31;
@@ -76,5 +78,18 @@ namespace std {
     };
 
 }
+
+template <typename T, typename K>
+struct hashing_pair
+{
+
+    std::size_t operator()(const std::pair<T, K>& k) const
+    {
+        size_t init = 31;
+        init = yaucl::hashing::hash_combine<T>(init, k.first);
+        init = yaucl::hashing::hash_combine<K>(init, k.second);
+        return init;
+    }
+};
 
 #endif //FUZZYSTRINGMATCHING2_VECTOR_HASH_H

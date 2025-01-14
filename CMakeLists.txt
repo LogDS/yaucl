@@ -6,7 +6,7 @@ set(ROCKSDB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines -Wno-maybe-uninitialized")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-redundant-move")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-memory-model")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-memory-model")
 add_compile_definitions(USE_COROUTINES)
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 #SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )

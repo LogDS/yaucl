@@ -26,9 +26,13 @@
 #ifndef CLASSIFIERS_FLEXIBLEFA_H
 #define CLASSIFIERS_FLEXIBLEFA_H
 
+#ifndef EOF
+#define EOF (-1)
+#endif
+
+#include <yaucl/hashing/pair_hash.h>
 #include <random>
 #include <unordered_set>
-#include <yaucl/hashing/pair_hash.h>
 #include <yaucl/hashing/uset_hash.h>
 #include <yaucl/graphs/FlexibleGraph.h>
 #include <yaucl/structures/set_operations.h>
@@ -785,7 +789,7 @@ public:
 
         // Shared nodes' label intersection
         std::pair<size_t, size_t> srcNodePair, dstNodePair;
-        std::unordered_map<std::pair<size_t, size_t>, size_t> pairNodesToDestGraphId;
+        std::unordered_map<std::pair<size_t, size_t>, size_t, hashing_pair<size_t, size_t>> pairNodesToDestGraphId;
         for (; beg != end; beg++) {
             // Nodes have the same label
             auto key = beg->first;
