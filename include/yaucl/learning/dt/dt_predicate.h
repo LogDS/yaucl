@@ -31,6 +31,7 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <sstream>
 #include <ostream>
 using union_minimal = std::variant<std::string,double>;
 using record = std::vector<std::pair<std::string,union_minimal>>;

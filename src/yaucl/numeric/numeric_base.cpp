@@ -19,6 +19,9 @@ std::vector <size_t> yaucl::numeric::numberToBase(size_t n, size_t b) {
 #include <iomanip>
 
 long long int yaucl::numeric::parse8601(const std::string &save) {
+    if (save.find_first_not_of("0123456789") == std::string::npos) {
+        return std::stoll(save);
+    }
     std::istringstream in{save};
     date::sys_time<std::chrono::milliseconds> tp;
     in >> date::parse("%FT%TZ", tp);
