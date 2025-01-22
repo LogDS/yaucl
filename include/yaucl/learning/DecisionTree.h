@@ -31,6 +31,7 @@ struct DecisionTree {
     double total_weights;
     const std::unordered_set<std::string>& numerical;
     const std::unordered_set<std::string>&categorical;
+    bool do_just_classical_same;
 
     DecisionTree(const data_record& records,
                  const data_clazzes& records_classes,
@@ -39,7 +40,8 @@ struct DecisionTree {
                  size_t max_height = std::numeric_limits<size_t>::max(),
                  double maxPrec = 1.0,
                  size_t l = 1,
-                 size_t eta = 1) : dr{records,records_classes,max_height,maxPrec,l,eta}, numerical{numerical}, categorical{categorical} {
+                 size_t eta = 1,
+                 bool do_just_classical_same = true) : dr{records,records_classes,max_height,maxPrec,l,eta}, numerical{numerical}, categorical{categorical}, do_just_classical_same{do_just_classical_same} {
         goodness = total_weights = 0;
     }
 

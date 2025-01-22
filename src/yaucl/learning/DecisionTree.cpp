@@ -34,6 +34,9 @@ SOFTWARE.
     children.emplace_back(0, dr.max_record_size, 0);
     currentNode.push(0);
     size_t curr = 0;
+    size_t idx = 0;
+    union_minimal missing_val_dbl = 0.0;
+    union_minimal missing_val_str = "";
     while (!currentNode.empty()) {
         curr = currentNode.top();
         auto& node = children[curr];
@@ -59,30 +62,38 @@ SOFTWARE.
             purity = purity/((double) N);
             bool terminate = false;
             if ((N<=dr.eta) || (purity >= dr.maxPrec) || (node.max_height == dr.max_height)) {
+//                std::cerr << "purityTerminate " << (idx++) << std::endl;
                 terminate = true;
             } else {
                 node.candidate.second = -1;
 
-                dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate);
+                dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate, do_just_classical_same);
                 dr.sortOnSelectedCategoricalField(categorical, node.begin, node.end, node.candidate);
 
                 if (dooblique)
                     dr.sortOnSelectedObliquity(numerical, node.begin, node.end, node.candidate, 10);
 
                 if (node.candidate.second == -1) {
+//                    std::cerr << "node.candidate.second == -1 " << (idx++)  << std::endl;
                     terminate = true;
                 } else {
+//                    std::cerr << "re" << std::endl;
                     dr.init_offsets(node.candidate.first.field, node.begin, node.end);
+                    const union_minimal& missing_val = std::holds_alternative<double>(node.candidate.first.value) ? missing_val_dbl : missing_val_str;
                     auto beg = dr.offsets.begin()+node.begin;
                     auto end = dr.offsets.begin()+node.end;
                     auto it2 = std::stable_partition(beg,
                                                      end,
-                                                     [&node,this](const size_t& obj) {
+                                                     [&node,this,missing_val](const size_t& obj) {
+                                                        if (this->dr.fieldOffset[obj] == -1) {
+                                                            return node.candidate.first(missing_val);
+                                                        } else
 //                                                         if (!(this->dr.records[obj][this->dr.fieldOffset[obj]].first == node.candidate.first.field))
 //                                                             exit(199);
                                                          return node.candidate.first(this->dr.records[obj][this->dr.fieldOffset[obj]].second);
                                                      });
                     if ((it2 == beg) || (it2 == end)) {
+//                        std::cerr << "id beg/end Terminate" << std::endl;
                         terminate = true;
                     }
                     node.split = (size_t)((ptrdiff_t)(it2-dr.offsets.begin()));
@@ -92,6 +103,7 @@ SOFTWARE.
             }
 
             if (terminate) {
+//                std::cerr << "isTerminate "  << (idx++) << std::endl;
                 node.isLeaf = true;
                 node.majority_class = clazz;
                 node.majority_class_precision = dr.forthegain.getClassPrecision(clazz);
@@ -101,10 +113,12 @@ SOFTWARE.
                 continue;
             }
         } else if (node.rightOffset == 0) {
+//            std::cerr << "node.rightOffset == 0 "  << (idx++) <<  std::endl;
             node.rightOffset = children.size();
             currentNode.push(node.rightOffset);
             children.emplace_back(node.split, node.end, node.max_height+1);
         } else {
+//            std::cerr << "pop "  << (idx++) <<  std::endl;
             currentNode.pop();
         }
     }

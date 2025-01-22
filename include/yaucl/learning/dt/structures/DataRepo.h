@@ -131,11 +131,12 @@ struct DataRepo {
         }
     }
 
-    inline void sortOnSelectedNumericField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice) {
+    inline void sortOnSelectedNumericField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, bool justSame) {
         for (const auto& var : vars) {
             // The extention for these operand types comes from the paper
             // of dtControl: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
-            for (size_t i = 0, N = (size_t)operand_type::LN; i<=N; i++) {
+            size_t N = justSame ? 0 : (size_t)operand_type::LN;
+            for (size_t i = 0; i<=N; i++) {
                 auto obj = (operand_type)i;
                 auto result = sortOnSelectedNumericField(var, begin, end, obj);
                 if (result.second > choice.second) {
