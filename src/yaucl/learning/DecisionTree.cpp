@@ -71,7 +71,10 @@ SOFTWARE.
             } else {
                 node.candidate.second = -1;
 
+                std::cerr << "sortOnSelectedNumericField " << (idx++) << std::endl;
                 dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate, do_just_classical_same);
+
+                std::cerr << "sortOnSelectedCategoricalField " << (idx++) << std::endl;
                 dr.sortOnSelectedCategoricalField(categorical, node.begin, node.end, node.candidate);
 
                 if (dooblique)

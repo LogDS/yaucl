@@ -164,7 +164,7 @@ private:
         std::vector<std::string> M;
         for (auto it = begin; it != end; it++) {
             auto off = offsets[it];
-            M.emplace_back(std::get<std::string>(records[off][fieldOffset[off]].second));
+            M.emplace_back(find_argument::findString(records[off], fieldOffset[off]));
         }
         std::sort( M.begin(), M.end() );
         M.erase( unique( M.begin(), M.end() ), M.end() );
@@ -177,7 +177,7 @@ private:
         }
         for (auto it = begin; it != end; it++) {
             auto off = offsets[it];
-            val.first = std::get<std::string>(records[off][fieldOffset[off]].second);
+            val.first = find_argument::findString(records[off], fieldOffset[off]);
             val.second = records_classes[off];
             N[val]++;
         }
