@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
-
+#include <yaucl/functional/cond_inline.h>
 struct ForTheWin {
     enum gain_measures {
         Entropy,
@@ -47,35 +47,35 @@ struct ForTheWin {
     ForTheWin& operator=(ForTheWin&& ) = default;
     std::pair<double,double> dd{0.0,0.0};
 
-    inline void setP(int clazz, double pos, double neg) {
+    INLINE void setP(int clazz, double pos, double neg) {
         v[clazz].first = pos/nPos;
         v[clazz].second = neg/nNeg;
     }
-    inline double countClass(int clazz) {
+    INLINE double countClass(int clazz) {
         total+=1.0;
         return (n[clazz]+=1.0);
     }
-    inline void init(int max_classes) {
+    INLINE void init(int max_classes) {
         v.resize(max_classes+1, dd);
         n.resize(max_classes+1, 0.0);
         total = 0.0;
     }
 
-    inline size_t nClasses() const {
+    INLINE size_t nClasses() const {
         return v.size();
     }
-    inline double getClassPrecision(int clazz) const {
+    INLINE double getClassPrecision(int clazz) const {
         return n[clazz];
     }
-    inline double getP(int clazz, bool posNegOtherwise) const {
+    INLINE double getP(int clazz, bool posNegOtherwise) const {
         return posNegOtherwise ? v[clazz].first : v[clazz].second;
     }
     double getGain(gain_measures type) const;
-    inline void goodBad(double d, double d1) {
+    INLINE void goodBad(double d, double d1) {
         nPos = d; nNeg = d1;
     }
 
-    inline void normalizeCountClass() {
+    INLINE void normalizeCountClass() {
         std::transform(n.begin(), n.end(), n.begin(), [this](double x ){
             return x/total;
         });

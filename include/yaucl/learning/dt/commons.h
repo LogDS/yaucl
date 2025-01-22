@@ -11,7 +11,7 @@
 #include <vector>
 
 
-
+#include <yaucl/functional/cond_inline.h>
 #include <yaucl/learning/dt/structures/find_argument.h>
 #include <yaucl/learning/dt/structures/n_vector.h>
 #include <yaucl/learning/dt/structures/Nodes.h>

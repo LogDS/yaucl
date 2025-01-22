@@ -38,17 +38,20 @@ SOFTWARE.
     union_minimal missing_val_dbl = 0.0;
     union_minimal missing_val_str = "";
     while (!currentNode.empty()) {
+        std::cerr << "start " << (idx++) << std::endl;
         curr = currentNode.top();
         auto& node = children[curr];
         dr.forthegain.reset();
 
         if ((node.split == 0) && (node.rightOffset == 0)) {
+            std::cerr << "start " << (idx++) << std::endl;
             size_t N = node.end - node.begin;
 //                std::cout << node.begin << "---"<<node.end << std::endl;
 
             double purity = 0.0;
             int clazz = -1;
 
+            std::cerr << "iteration over  " << node.end << ": " << (idx++) << std::endl;
             for (std::size_t i = node.begin; i<node.end; i++) {
                 int curr_clazz = dr.records_classes[dr.offsets[i]];
                 auto tmp = (double)(dr.forthegain.countClass(curr_clazz));
@@ -57,12 +60,13 @@ SOFTWARE.
                     clazz = curr_clazz;
                 }
             }
+            std::cerr << "normalizeCountClass " << (idx++) << std::endl;
             dr.forthegain.normalizeCountClass();
             const double current_weight = purity / ((double)dr.max_record_size);
             purity = purity/((double) N);
             bool terminate = false;
             if ((N<=dr.eta) || (purity >= dr.maxPrec) || (node.max_height == dr.max_height)) {
-//                std::cerr << "purityTerminate " << (idx++) << std::endl;
+                std::cerr << "purityTerminate " << (idx++) << std::endl;
                 terminate = true;
             } else {
                 node.candidate.second = -1;
@@ -74,10 +78,10 @@ SOFTWARE.
                     dr.sortOnSelectedObliquity(numerical, node.begin, node.end, node.candidate, 10);
 
                 if (node.candidate.second == -1) {
-//                    std::cerr << "node.candidate.second == -1 " << (idx++)  << std::endl;
+                    std::cerr << "node.candidate.second == -1 " << (idx++)  << std::endl;
                     terminate = true;
                 } else {
-//                    std::cerr << "re" << std::endl;
+                    std::cerr << "re" << (idx++)  << std::endl;
                     dr.init_offsets(node.candidate.first.field, node.begin, node.end);
                     const union_minimal& missing_val = std::holds_alternative<double>(node.candidate.first.value) ? missing_val_dbl : missing_val_str;
                     auto beg = dr.offsets.begin()+node.begin;
@@ -87,13 +91,13 @@ SOFTWARE.
                                                      [&node,this,missing_val](const size_t& obj) {
                                                         if (this->dr.fieldOffset[obj] == -1) {
                                                             return node.candidate.first(missing_val);
-                                                        } else
+                                                        }
 //                                                         if (!(this->dr.records[obj][this->dr.fieldOffset[obj]].first == node.candidate.first.field))
 //                                                             exit(199);
                                                          return node.candidate.first(this->dr.records[obj][this->dr.fieldOffset[obj]].second);
                                                      });
                     if ((it2 == beg) || (it2 == end)) {
-//                        std::cerr << "id beg/end Terminate" << std::endl;
+                        std::cerr << "id beg/end Terminate" << std::endl;
                         terminate = true;
                     }
                     node.split = (size_t)((ptrdiff_t)(it2-dr.offsets.begin()));
@@ -103,7 +107,7 @@ SOFTWARE.
             }
 
             if (terminate) {
-//                std::cerr << "isTerminate "  << (idx++) << std::endl;
+                std::cerr << "isTerminate "  << (idx++) << std::endl;
                 node.isLeaf = true;
                 node.majority_class = clazz;
                 node.majority_class_precision = dr.forthegain.getClassPrecision(clazz);
@@ -113,12 +117,12 @@ SOFTWARE.
                 continue;
             }
         } else if (node.rightOffset == 0) {
-//            std::cerr << "node.rightOffset == 0 "  << (idx++) <<  std::endl;
+            std::cerr << "node.rightOffset == 0 "  << (idx++) <<  std::endl;
             node.rightOffset = children.size();
             currentNode.push(node.rightOffset);
             children.emplace_back(node.split, node.end, node.max_height+1);
         } else {
-//            std::cerr << "pop "  << (idx++) <<  std::endl;
+            std::cerr << "pop "  << (idx++) <<  std::endl;
             currentNode.pop();
         }
     }

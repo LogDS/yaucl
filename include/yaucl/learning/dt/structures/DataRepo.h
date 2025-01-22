@@ -39,7 +39,7 @@ struct DataRepo {
              size_t eta = 1,
              ForTheWin::gain_measures measure = ForTheWin::gain_measures::Gini);
 
-    inline void init_offsets(const std::string& key, size_t begin, size_t end) {
+    INLINE void init_offsets(const std::string& key, size_t begin, size_t end) {
         for (size_t idx = begin; idx<end; idx++) {
             size_t i = offsets[idx];
             fieldOffset[i] = fa.find_offset(records[i], key);
@@ -48,7 +48,7 @@ struct DataRepo {
 
 
 
-    inline void sortOnSelectedObliquity(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, size_t iterations = 1) {
+    INLINE void sortOnSelectedObliquity(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, size_t iterations = 1) {
         // This was inspired by decision trees provided here: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
         // This method is a direct C++ translation of the following python code:
         // https://github.com/TorshaMajumder/Ensembles_of_Oblique_Decision_Trees/blob/master/Decision_trees/WODT.py
@@ -121,7 +121,7 @@ struct DataRepo {
         }
     }
 
-    inline void sortOnSelectedCategoricalField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice) {
+    INLINE void sortOnSelectedCategoricalField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice) {
         for (const auto& var : vars) {
             auto result = sortOnSelectedCategoricalField(var, begin, end);
             if (result.second > choice.second) {
@@ -131,7 +131,7 @@ struct DataRepo {
         }
     }
 
-    inline void sortOnSelectedNumericField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, bool justSame) {
+    INLINE void sortOnSelectedNumericField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, bool justSame) {
         for (const auto& var : vars) {
             // The extention for these operand types comes from the paper
             // of dtControl: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
@@ -148,7 +148,7 @@ struct DataRepo {
     }
 
 private:
-    inline
+    INLINE
     std::pair<dt_predicate,double> sortOnSelectedCategoricalField(const std::string& var, size_t begin, size_t end) {
         init_offsets(var, begin, end);
         std::sort(offsets.begin()+begin,
@@ -228,7 +228,7 @@ private:
 
 
 
-    inline std::pair<dt_predicate, double> sortOnSelectedNumericField(const std::string& var, size_t begin, size_t end, operand_type ot = operand_type::SAME) {
+    INLINE std::pair<dt_predicate, double> sortOnSelectedNumericField(const std::string& var, size_t begin, size_t end, operand_type ot = operand_type::SAME) {
         init_offsets(var, begin, end);
         std::sort(offsets.begin()+begin,
                   offsets.begin()+end,
@@ -286,7 +286,7 @@ private:
         return predicate_w_score;
     }
 
-    inline void init_matrix(const std::vector<std::string>& numerical_dimensions,
+    INLINE void init_matrix(const std::vector<std::string>& numerical_dimensions,
                             optimize::Matrix& X_out, optimize::Vector& Y_out) {
         size_t colSize = numerical_dimensions.size();
         size_t N = records.size();
@@ -305,7 +305,7 @@ private:
 //        std::cout << X_out << std::endl;
     }
 
-    inline void init_matrix(const std::set<size_t>& selected_records,
+    INLINE void init_matrix(const std::set<size_t>& selected_records,
                             const std::vector<std::string>& numerical_dimensions,
                             optimize::Matrix& X_out, optimize::Vector& Y_out) {
         if (selected_records.empty()) {
