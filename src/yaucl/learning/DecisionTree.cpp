@@ -161,6 +161,7 @@ void DecisionTree::populate_children_predicates2(size_t nodeid,
                 case dt_predicate::GEQ_THAN:
                 case dt_predicate::NOT_IN_SET:
                 case dt_predicate::OBL_PREDICATE_GT:
+                    std::cerr << " We should never get here, assign copies only" << std::endl;
                     /* We should never get here, assign copies only */
                     break;
             }

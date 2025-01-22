@@ -321,10 +321,33 @@ bool DataPredicate::intersect_with(const DataPredicate& predicate) {
             }
             return true;
         } else {
-            asInterval();
-            DataPredicate rightCopy = predicate;
-            rightCopy.asInterval();
-            return intersect_with(rightCopy); // (1)
+            switch (casusu) {
+                case IN_SET: {
+                    DEBUG_ASSERT(predicate.casusu == NOT_IN_SET);
+                    DEBUG_ASSERT(categoric_set.size() == 1);
+                    DEBUG_ASSERT(predicate.categoric_set.size() == 1);
+                    return *categoric_set.begin() != *predicate.categoric_set.begin();
+                }
+
+                case NOT_IN_SET: {
+                    DEBUG_ASSERT(predicate.casusu == IN_SET);
+                    DEBUG_ASSERT(categoric_set.size() == 1);
+                    DEBUG_ASSERT(predicate.categoric_set.size() == 1);
+                    bool test = *categoric_set.begin() != *predicate.categoric_set.begin();
+                    if (test) {
+                        *this = predicate;
+                    }
+                    return test;
+                }
+
+                default: {
+                    asInterval();
+                    DataPredicate rightCopy = predicate;
+                    rightCopy.asInterval();
+                    return intersect_with(rightCopy); // (1)
+                }
+            }
+
         }
     }
 }
@@ -414,6 +437,14 @@ bool DataPredicate::testOverSingleVariable(const std::string &val) const {
             return ((current <= val)
                     && (val <= std::get<std::string>(value_upper_bound)));
         }
+        case IN_SET: {
+            union_minimal valc = val;
+            return categoric_set.contains(valc);
+        }
+        case NOT_IN_SET: {
+            union_minimal valc = val;
+            return !categoric_set.contains(valc);
+        }
         default:
             throw std::runtime_error("UNEXPECTED CASE!");
     }
@@ -446,6 +477,10 @@ bool DataPredicate::testOverSingleVariable(double val) const {
             if (exceptions.contains(curr)) return false;
             return ((current <= val)
                     && (val <= std::get<double>(value_upper_bound)));
+        }
+        case NOT_IN_SET:
+        case IN_SET: {
+            return false;
         }
         default:
             throw std::runtime_error("UNEXPECTED CASE!");
