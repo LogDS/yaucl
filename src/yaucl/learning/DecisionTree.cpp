@@ -38,20 +38,25 @@ SOFTWARE.
     union_minimal missing_val_dbl = 0.0;
     union_minimal missing_val_str = "";
     while (!currentNode.empty()) {
+#ifdef DEBUG_PRINT
         std::cerr << "start " << (idx++) << std::endl;
+#endif
         curr = currentNode.top();
         auto& node = children[curr];
         dr.forthegain.reset();
 
         if ((node.split == 0) && (node.rightOffset == 0)) {
+#ifdef DEBUG_PRINT
             std::cerr << "start " << (idx++) << std::endl;
+#endif
             size_t N = node.end - node.begin;
 //                std::cout << node.begin << "---"<<node.end << std::endl;
 
             double purity = 0.0;
             int clazz = -1;
-
+#ifdef DEBUG_PRINT
             std::cerr << "iteration over  " << node.end << ": " << (idx++) << std::endl;
+#endif
             for (std::size_t i = node.begin; i<node.end; i++) {
                 int curr_clazz = dr.records_classes[dr.offsets[i]];
                 auto tmp = (double)(dr.forthegain.countClass(curr_clazz));
@@ -60,31 +65,41 @@ SOFTWARE.
                     clazz = curr_clazz;
                 }
             }
+#ifdef DEBUG_PRINT
             std::cerr << "normalizeCountClass " << (idx++) << std::endl;
+#endif
             dr.forthegain.normalizeCountClass();
             const double current_weight = purity / ((double)dr.max_record_size);
             purity = purity/((double) N);
             bool terminate = false;
             if ((N<=dr.eta) || (purity >= dr.maxPrec) || (node.max_height == dr.max_height)) {
+#ifdef DEBUG_PRINT
                 std::cerr << "purityTerminate " << (idx++) << std::endl;
+#endif
                 terminate = true;
             } else {
                 node.candidate.second = -1;
-
+#ifdef DEBUG_PRINT
                 std::cerr << "sortOnSelectedNumericField " << (idx++) << std::endl;
+#endif
                 dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate, do_just_classical_same);
-
+#ifdef DEBUG_PRINT
                 std::cerr << "sortOnSelectedCategoricalField " << (idx++) << std::endl;
+#endif
                 dr.sortOnSelectedCategoricalField(categorical, node.begin, node.end, node.candidate);
 
                 if (dooblique)
                     dr.sortOnSelectedObliquity(numerical, node.begin, node.end, node.candidate, 10);
 
                 if (node.candidate.second == -1) {
+#ifdef DEBUG_PRINT
                     std::cerr << "node.candidate.second == -1 " << (idx++)  << std::endl;
+#endif
                     terminate = true;
                 } else {
+#ifdef DEBUG_PRINT
                     std::cerr << "re" << (idx++)  << std::endl;
+#endif
                     dr.init_offsets(node.candidate.first.field, node.begin, node.end);
                     const union_minimal& missing_val = std::holds_alternative<double>(node.candidate.first.value) ? missing_val_dbl : missing_val_str;
                     auto beg = dr.offsets.begin()+node.begin;
@@ -100,7 +115,9 @@ SOFTWARE.
                                                          return node.candidate.first(this->dr.records[obj][this->dr.fieldOffset[obj]].second);
                                                      });
                     if ((it2 == beg) || (it2 == end)) {
+#ifdef DEBUG_PRINT
                         std::cerr << "id beg/end Terminate" << std::endl;
+#endif
                         terminate = true;
                     }
                     node.split = (size_t)((ptrdiff_t)(it2-dr.offsets.begin()));
@@ -110,7 +127,9 @@ SOFTWARE.
             }
 
             if (terminate) {
+#ifdef DEBUG_PRINT
                 std::cerr << "isTerminate "  << (idx++) << std::endl;
+#endif
                 node.isLeaf = true;
                 node.majority_class = clazz;
                 node.majority_class_precision = dr.forthegain.getClassPrecision(clazz);
@@ -120,12 +139,16 @@ SOFTWARE.
                 continue;
             }
         } else if (node.rightOffset == 0) {
+#ifdef DEBUG_PRINT
             std::cerr << "node.rightOffset == 0 "  << (idx++) <<  std::endl;
+#endif
             node.rightOffset = children.size();
             currentNode.push(node.rightOffset);
             children.emplace_back(node.split, node.end, node.max_height+1);
         } else {
+#ifdef DEBUG_PRINT
             std::cerr << "pop "  << (idx++) <<  std::endl;
+#endif
             currentNode.pop();
         }
     }
@@ -161,7 +184,9 @@ void DecisionTree::populate_children_predicates2(size_t nodeid,
                 case dt_predicate::GEQ_THAN:
                 case dt_predicate::NOT_IN_SET:
                 case dt_predicate::OBL_PREDICATE_GT:
+#ifdef DEBUG_PRINT
                     std::cerr << " We should never get here, assign copies only" << std::endl;
+#endif
                     /* We should never get here, assign copies only */
                     break;
             }
