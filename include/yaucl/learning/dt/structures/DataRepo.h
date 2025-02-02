@@ -6,6 +6,8 @@
 
 #ifndef DT_DATAREPO_H
 #define DT_DATAREPO_H
+#define DEBUG
+#include <yaucl/functional/assert.h>
 
 
 #include <yaucl/learning/dt/commons.h>
@@ -42,7 +44,10 @@ struct DataRepo {
     INLINE void init_offsets(const std::string& key, size_t begin, size_t end) {
         for (size_t idx = begin; idx<end; idx++) {
             size_t i = offsets[idx];
+            size_t offset = fa.find_offset(records[i], key);
+            DEBUG_ASSERT((offset == -1) || (records[i][offset].first == key));
             fieldOffset[i] = fa.find_offset(records[i], key);
+
         }
     }
 
@@ -299,7 +304,7 @@ private:
             Y_out(i) = clazz;
             for (size_t j = 0; j<colSize; j++) {
                 const std::string& dimName = numerical_dimensions.at(j);
-                X_out(i,j) = std::get<double>(fa.find(records[i], dimName));
+                X_out(i,j) = (fa.findNumeric(records[i], dimName));
             }
         }
 //        std::cout << X_out << std::endl;
@@ -326,7 +331,7 @@ private:
                 Y_out(offsetElem) = clazz;
                 for (size_t j = 0; j<colSize; j++) {
                     const std::string& dimName = numerical_dimensions.at(j);
-                    X_out(offsetElem,j) = std::get<double>(fa.find(records[i], dimName));
+                    X_out(offsetElem,j) = (fa.findNumeric(records[i], dimName));
                 }
                 offsetElem++;
             }

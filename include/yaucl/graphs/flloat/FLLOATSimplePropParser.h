@@ -4,7 +4,7 @@
 
 #ifndef KNOBAB_SERVER_FLLOATSIMPLEPROPPARSER_H
 #define KNOBAB_SERVER_FLLOATSIMPLEPROPPARSER_H
-
+#define AVOID_CLASSIFIERS_PAIR_HASH_H2
 namespace antlr4 {
     class ANTLRInputStream;
     class CommonTokenStream;

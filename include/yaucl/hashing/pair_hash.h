@@ -23,6 +23,7 @@
 //
 // Created by giacomo on 14/11/20.
 //
+//#ifndef AVOID_CLASSIFIERS_PAIR_HASH_H2
 #ifndef CLASSIFIERS_PAIR_HASH_H2
 #define CLASSIFIERS_PAIR_HASH_H2
 
@@ -30,10 +31,11 @@
 #include <utility>
 
 namespace std {
+#ifndef AVOID_CLASSIFIERS_PAIR_HASH_H2
     template <typename T, typename K>
     struct hash<std::pair<T, K>>
     {
-        virtual ~hash<std::pair<T, K>>() {}
+//        virtual ~hash<std::pair<T, K>>() {}
 
         std::size_t operator()(const std::pair<T, K>& k) const
         {
@@ -43,6 +45,7 @@ namespace std {
             return init;
         }
     };
+#endif
 
     // Recursive template code derived from Matthieu M., https://stackoverflow.com/a/7115547/1376095
     template <class Tuple, size_t Index = std::tuple_size<Tuple>::value - 1>
@@ -93,3 +96,4 @@ struct hashing_pair
 };
 
 #endif //FUZZYSTRINGMATCHING2_VECTOR_HASH_H
+//#endif //AVOID_CLASSIFIERS_PAIR_HASH_H2

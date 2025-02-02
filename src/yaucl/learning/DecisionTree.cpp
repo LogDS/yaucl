@@ -3,7 +3,7 @@
 //
 
 #include <yaucl/learning/DecisionTree.h>
-
+//#define DEBUG_PRINT
 
 void DecisionTree::splitTree(bool dooblique) {
     /**
@@ -79,6 +79,8 @@ SOFTWARE.
                 terminate = true;
             } else {
                 node.candidate.second = -1;
+                if (idx == 4)
+                    std::cerr << "DEBUG_MOVE" << std::endl;
 #ifdef DEBUG_PRINT
                 std::cerr << "sortOnSelectedNumericField " << (idx++) << std::endl;
 #endif

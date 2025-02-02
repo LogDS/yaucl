@@ -79,7 +79,7 @@ void approximated_topo_sort(graph_join_pm &g, std::vector<size_t> &order) {
 #include <yaucl/functional/assert.h>
 
 void rec_mark(std::unordered_map<std::pair<size_t, size_t>, std::vector<std::pair<size_t, size_t>>>& table,
-              std::unordered_set<std::pair<size_t, size_t>>& marked,
+              std::unordered_set<std::pair<size_t, size_t>, hashing_pair<size_t, size_t>>& marked,
               std::pair<size_t, size_t> cp) {
     if (cp.first > cp.second) std::swap(cp.first, cp.second);
     if (marked.insert(cp).second) {
@@ -100,7 +100,7 @@ void getNodeClustersFromLabel(graph_join_pm &graph,
 
     std::vector<size_t> order;
     std::unordered_map<std::pair<size_t, size_t>, std::vector<std::pair<size_t, size_t>>> table;
-    std::unordered_set<std::pair<size_t, size_t>> marked;
+    std::unordered_set<std::pair<size_t, size_t>, hashing_pair<size_t, size_t>> marked;
     std::unordered_map<std::string, std::pair<std::vector<size_t>, std::vector<size_t>>> element_map_finalNotFinal{};
 
     approximated_topo_sort(graph, order);

@@ -52,6 +52,10 @@
 // C++ program for the above approach
 
 #include <bits/stdc++.h>
+//#ifdef AVOID_CLASSIFIERS_PAIR_HASH_H2
+//#undef AVOID_CLASSIFIERS_PAIR_HASH_H2
+//#include <yaucl/hashing/pair_hash.h>
+//#endif
 
 template <typename T>
 struct QNode2 {
