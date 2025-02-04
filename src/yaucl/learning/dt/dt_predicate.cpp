@@ -25,6 +25,13 @@
 
 #include <yaucl/learning/dt/dt_predicate.h>
 
+std::ostream &operator<<(std::ostream &os, const union_minimal &insertion) {
+    if (std::holds_alternative<double>(insertion))
+        return os << std::get<double>(insertion);
+    else
+        return os << std::quoted(std::get<std::string>(insertion));
+}
+
 bool dt_predicate::operator()(const union_minimal &val) const {
     union_minimal v;
     if (std::holds_alternative<double>(val))

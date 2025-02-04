@@ -33,7 +33,12 @@
 #include <unordered_map>
 #include <sstream>
 #include <ostream>
+#include <iomanip>
 using union_minimal = std::variant<std::string,double>;
+
+
+std::ostream &operator<<(std::ostream &os, const union_minimal &insertion);
+
 using record = std::vector<std::pair<std::string,union_minimal>>;
 using data_record = std::vector<record>;
 using data_clazzes = std::vector<int>;

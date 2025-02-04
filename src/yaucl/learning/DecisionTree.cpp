@@ -4,6 +4,9 @@
 
 #include <yaucl/learning/DecisionTree.h>
 //#define DEBUG_PRINT
+#include <yaucl/strings/serializers.h>
+
+
 
 void DecisionTree::splitTree(bool dooblique) {
     /**
@@ -30,9 +33,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
      */
-    std::stack<size_t> currentNode;
+    std::deque<size_t> currentNode;
     children.emplace_back(0, dr.max_record_size, 0);
-    currentNode.push(0);
+    currentNode.push_back(0);
     size_t curr = 0;
     size_t idx = 0;
     union_minimal missing_val_dbl = 0.0;
@@ -41,7 +44,7 @@ SOFTWARE.
 #ifdef DEBUG_PRINT
         std::cerr << "start " << (idx++) << std::endl;
 #endif
-        curr = currentNode.top();
+        curr = *currentNode.rbegin();
         auto& node = children[curr];
         dr.forthegain.reset();
 
@@ -84,16 +87,40 @@ SOFTWARE.
 #ifdef DEBUG_PRINT
                 std::cerr << "sortOnSelectedNumericField " << (idx++) << std::endl;
 #endif
-                dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate, do_just_classical_same);
+                dr.sortOnSelectedNumericField(numerical, node.begin, node.end, node.candidate, do_just_classical_same, currentNode, children);
 #ifdef DEBUG_PRINT
                 std::cerr << "sortOnSelectedCategoricalField " << (idx++) << std::endl;
 #endif
-                dr.sortOnSelectedCategoricalField(categorical, node.begin, node.end, node.candidate);
+                dr.sortOnSelectedCategoricalField(categorical, node.begin, node.end, node.candidate, currentNode, children);
 
-                if (dooblique)
-                    dr.sortOnSelectedObliquity(numerical, node.begin, node.end, node.candidate, 10);
-
+                if ((dooblique) || (node.candidate.second == -1)) {
+                    auto allNumbers = numerical;
+                    for (const auto& x : currentNode) {
+                        allNumbers.erase(children[x].candidate.first.field);
+                    }
+                    const size_t NN = allNumbers.size();
+                    if (NN < numerical.size()) {
+                        if (NN == 1) {
+                            dr.sortOnSelectedNumericField(allNumbers, node.begin, node.end, node.candidate, do_just_classical_same, currentNode, children);
+                        }
+                        else if (NN > 1)
+                             dr.sortOnSelectedObliquity(allNumbers, node.begin, node.end, node.candidate, 10);
+                    }
+                }
                 if (node.candidate.second == -1) {
+                    auto beg = dr.offsets.begin()+node.begin;
+                    auto end = dr.offsets.begin()+node.end;
+                    std::unordered_set<int> clazzez;
+                    std::map<record, std::unordered_set<int>> records;
+                    for (auto it = beg; it != end; it++) {
+                        auto lcz = dr.records_classes.at(*it);
+                        clazzez.emplace(lcz);
+                        records[dr.records[*it]].insert(lcz);
+                    }
+                    std::cout << std::vector<int>(clazzez.begin(), clazzez.end()) << std::endl;
+                    for (const auto& [k, v] : records) {
+                        std::cout << k << " ~~ " << v << std::endl;
+                    }
 #ifdef DEBUG_PRINT
                     std::cerr << "node.candidate.second == -1 " << (idx++)  << std::endl;
 #endif
@@ -123,7 +150,7 @@ SOFTWARE.
                         terminate = true;
                     }
                     node.split = (size_t)((ptrdiff_t)(it2-dr.offsets.begin()));
-                    currentNode.push(children.size());
+                    currentNode.push_back(children.size());
                     children.emplace_back(node.begin, node.split, node.max_height+1);
                 }
             }
@@ -137,7 +164,7 @@ SOFTWARE.
                 node.majority_class_precision = dr.forthegain.getClassPrecision(clazz);
                 total_weights += current_weight;
                 goodness += (node.majority_class_precision * current_weight);
-                currentNode.pop();
+                currentNode.pop_back();
                 continue;
             }
         } else if (node.rightOffset == 0) {
@@ -145,13 +172,13 @@ SOFTWARE.
             std::cerr << "node.rightOffset == 0 "  << (idx++) <<  std::endl;
 #endif
             node.rightOffset = children.size();
-            currentNode.push(node.rightOffset);
+            currentNode.push_back(node.rightOffset);
             children.emplace_back(node.split, node.end, node.max_height+1);
         } else {
 #ifdef DEBUG_PRINT
             std::cerr << "pop "  << (idx++) <<  std::endl;
 #endif
-            currentNode.pop();
+            currentNode.pop_back();
         }
     }
 
