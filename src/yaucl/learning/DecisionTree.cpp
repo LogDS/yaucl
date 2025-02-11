@@ -117,11 +117,12 @@ SOFTWARE.
                         clazzez.emplace(lcz);
                         records[dr.records[*it]].insert(lcz);
                     }
+
+#ifdef DEBUG_PRINT
                     std::cout << std::vector<int>(clazzez.begin(), clazzez.end()) << std::endl;
                     for (const auto& [k, v] : records) {
                         std::cout << k << " ~~ " << v << std::endl;
                     }
-#ifdef DEBUG_PRINT
                     std::cerr << "node.candidate.second == -1 " << (idx++)  << std::endl;
 #endif
                     terminate = true;
