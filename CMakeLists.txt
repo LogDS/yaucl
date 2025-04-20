@@ -81,6 +81,7 @@ add_library(yaucl_data OBJECT
         src/yaucl/data/MemoryMappingFile.cpp
         src/yaucl/data/mmapFile.cpp
         src/yaucl/data/VariadicSizeArrayElements.cpp
+        src/yaucl/data/NDPFuzzyStringMatching.cpp
         src/yaucl/data/VarSizeNDPSorter.cpp
         src/yaucl/data/xml.cpp
         include/yaucl/data/json.h

@@ -6,6 +6,7 @@
 #define KNOBAB_SERVER_VARIADICSIZEARRAYELEMENTS_H
 
 #include <yaucl/data/MemoryMappingFile.h>
+#include <yaucl/functional/assert.h>
 #include "new_iovec.h"
 #include <fstream>
 #include <unordered_set>
@@ -69,6 +70,7 @@ namespace yaucl {
                 } else {
                     throw std::runtime_error("ERROR: cannot copy a VariadicSizeArrayElementsWriter when opened");
                 }
+                return *this;
             }
             VariadicSizeArrayElementsWriter& operator=(VariadicSizeArrayElementsWriter&&) = default;
             void put(const new_iovec& mem);
@@ -350,7 +352,10 @@ namespace yaucl {
             T* payload;
             bool opened;
 
+
         public:
+            FixedSizeArrayElements(size_t s, T* payload) : opened{true}, _size{s}, payload{payload} {
+            }
             FixedSizeArrayElements() {
                 _size = 0;
                 payload = nullptr;
@@ -366,7 +371,15 @@ namespace yaucl {
             FixedSizeArrayElements& operator=(const FixedSizeArrayElements&) = default;
             FixedSizeArrayElements& operator=(FixedSizeArrayElements&&) = default;
 
-            void open(const std::filesystem::path& path) {
+            const char* raw_data() const {
+                return (const char*)file.data();
+            }
+            template <typename K> FixedSizeArrayElements<K>* open_view_at_raw_offset(size_t raw_offset, size_t len) {
+                DEBUG_ASSERT(raw_offset < file.file_size());
+                DEBUG_ASSERT(raw_offset + len < file.file_size());
+                return new FixedSizeArrayElements<K>(len, (K*)(((char*)file.data())+raw_offset));
+            }
+             void open(const std::filesystem::path& path) {
                 close();
                 file.open(path);
                 opened = true;
