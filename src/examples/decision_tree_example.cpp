@@ -101,8 +101,8 @@ int main() {
     // Read the example data and split it into features and labels
     table data_frame = ReadCsv(file);
     std::vector<int> y;
-    std::string clazz = "L";
     std::vector<std::vector<std::pair<std::string,union_minimal>>> X;
+    std::string clazz = "L";
     Split_X_y(data_frame, X, y, clazz);
     auto h = data_frame.headers_;
     h.erase(std::remove(h.begin(), h.end(), clazz), h.end());

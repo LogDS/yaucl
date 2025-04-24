@@ -31,6 +31,7 @@ struct DecisionTree {
     double total_weights;
     const std::unordered_set<std::string>& numerical;
     const std::unordered_set<std::string>&categorical;
+    bool do_just_classical_same;
 
     DecisionTree(const data_record& records,
                  const data_clazzes& records_classes,
@@ -39,22 +40,34 @@ struct DecisionTree {
                  size_t max_height = std::numeric_limits<size_t>::max(),
                  double maxPrec = 1.0,
                  size_t l = 1,
-                 size_t eta = 1) : dr{records,records_classes,max_height,maxPrec,l,eta}, numerical{numerical}, categorical{categorical} {
+                 size_t eta = 1,
+                 bool do_just_classical_same = true) : dr{records,records_classes,max_height,maxPrec,l,eta}, numerical{numerical}, categorical{categorical}, do_just_classical_same{do_just_classical_same} {
         goodness = total_weights = 0;
     }
 
 
-    void splitTree();
+    void splitTree(bool dooblique = true);
 
-    void populate_children_predicates2(std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred) const {
+    void populate_children_predicates2(std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred) /*const*/ {
         std::vector<dt_predicate> memo;
         populate_children_predicates2(0, decision_to_pred, memo);
     }
 
+    /**
+     * This calculates the prediction of the current node by traversing the tree.
+     * The resulting node provides the expected class, the expected correctness of the
+     * prediction, as well as the predicate associated to the current element (if
+     * the tree was previously run with populate_children_predicates2!)
+     *
+     * @param record Record to test
+     * @return       Leaf node containing the classification outcome
+     */
+    const Nodes* prediction(const std::vector<std::pair<std::string,union_minimal>>& record) const;
+
 private:
     void populate_children_predicates2(size_t nodeid,
                                        std::unordered_map<int, std::vector<std::pair<double,std::vector<dt_predicate>>>> &decision_to_pred,
-                                       std::vector<dt_predicate>& current_stack) const;
+                                       std::vector<dt_predicate>& current_stack) /*const*/;
 };
 
 

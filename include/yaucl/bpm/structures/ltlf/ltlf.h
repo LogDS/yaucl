@@ -52,7 +52,19 @@ enum formula_t {
     LAST
 };
 
-
+//    template <typename T, typename K>
+//    struct hash<std::pair<T, K>>
+//    {
+////        virtual ~hash<std::pair<T, K>>() {}
+//
+//        std::size_t operator()(const std::pair<T, K>& k) const
+//        {
+//            size_t init = 31;
+//            init = yaucl::hashing::hash_combine<T>(init, k.first);
+//            init = yaucl::hashing::hash_combine<K>(init, k.second);
+//            return init;
+//        }
+//    };
 
 #include <string>
 #include <vector>
@@ -62,7 +74,7 @@ enum formula_t {
 #include "yaucl/bpm/structures/commons/DataPredicate.h"
 
 #include <yaucl/bpm/structures/ltlf/LeafType.h>
-
+#include <yaucl/hashing/pair_hash.h>
 
 struct ltlf {
     formula_t              casusu;

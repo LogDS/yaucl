@@ -31,8 +31,14 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <sstream>
 #include <ostream>
+#include <iomanip>
 using union_minimal = std::variant<std::string,double>;
+
+
+std::ostream &operator<<(std::ostream &os, const union_minimal &insertion);
+
 using record = std::vector<std::pair<std::string,union_minimal>>;
 using data_record = std::vector<record>;
 using data_clazzes = std::vector<int>;
@@ -103,8 +109,26 @@ struct dt_predicate {
     }
     friend std::ostream& operator<<(std::ostream& os, const dt_predicate &predicate);
 
+    static std::string conjunction_to_string(const std::vector<dt_predicate>& V) {
+        std::stringstream ss;
+        for (size_t idx = 0, N = V.size(); idx<N; idx++) {
+            ss << V[idx];
+            if (idx != (N-1))
+                ss << " ∧ ";
+        }
+        return ss.str();
+    }
+
     bool operator()(const union_minimal& val) const;
     bool operator()(const std::vector<std::pair<std::string,union_minimal >>& record) const;
+
+    static bool test_conjunctive_predicate(const std::vector<dt_predicate>& conjunction,
+                                           const std::vector<std::pair<std::string,union_minimal >>& record) {
+        for (const auto& x : conjunction)
+            if (!x(record))
+                return false;
+        return true;
+    }
 };
 
 namespace std {

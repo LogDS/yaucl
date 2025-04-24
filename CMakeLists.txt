@@ -6,12 +6,13 @@ set(ROCKSDB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines -Wno-maybe-uninitialized")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-redundant-move")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-memory-model")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-memory-model")
 add_compile_definitions(USE_COROUTINES)
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 #SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 add_subdirectory(submodules/eigen)
+include_directories(submodules/l-bfgs-b/include)
 include_directories(submodules/eigen)
 include_directories(submodules/date/include)
 include_directories(submodules/rapidcsv/src)
@@ -26,8 +27,16 @@ include_directories(antlr4/cpp/antlr4)
 include_directories(include/)
 include_directories(submodules/l-bfgs-b/include)
 set(WITH_TESTS OFF)
-add_subdirectory(submodules/rocksdb)
-include_directories(submodules/rocksdb/include)
+
+
+if(IGNORE_ROCKS_DB)
+
+else()
+        add_subdirectory(submodules/rocksdb)
+        include_directories(submodules/rocksdb/include)
+endif()
+
+
 include_directories(include)
 
 add_library(yaucl_learning OBJECT
@@ -45,8 +54,12 @@ add_library(yaucl_learning OBJECT
 )
 target_link_libraries(yaucl_learning yaucl_data)
 
+if(IGNORE_ROCKS_DB)
+
+else()
 add_library(yaucl_ndp OBJECT src/yaucl/data/RocksDBMap.cpp include/yaucl/data/RocksDBMap.h)
 target_link_libraries(yaucl_ndp snappy bz2  z rt ${ROCKSDB_STATIC_LIB})
+endif()
 
 #add_library(yaucl_learning OBJECT
 #        src/yaucl/learning/ForTheWin.cpp

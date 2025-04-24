@@ -6,6 +6,10 @@
 
 #ifndef DT_DATAREPO_H
 #define DT_DATAREPO_H
+#define DEBUG
+#include <unordered_set>
+#include <yaucl/functional/assert.h>
+#include <deque>
 
 
 #include <yaucl/learning/dt/commons.h>
@@ -39,16 +43,18 @@ struct DataRepo {
              size_t eta = 1,
              ForTheWin::gain_measures measure = ForTheWin::gain_measures::Gini);
 
-    inline void init_offsets(const std::string& key, size_t begin, size_t end) {
+    INLINE void init_offsets(const std::string& key, size_t begin, size_t end) {
         for (size_t idx = begin; idx<end; idx++) {
             size_t i = offsets[idx];
+            size_t offset = fa.find_offset(records[i], key);
+            DEBUG_ASSERT((offset == -1) || (records[i][offset].first == key));
             fieldOffset[i] = fa.find_offset(records[i], key);
         }
     }
 
 
 
-    inline void sortOnSelectedObliquity(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, size_t iterations = 1) {
+    INLINE void sortOnSelectedObliquity(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, size_t iterations = 1) {
         // This was inspired by decision trees provided here: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
         // This method is a direct C++ translation of the following python code:
         // https://github.com/TorshaMajumder/Ensembles_of_Oblique_Decision_Trees/blob/master/Decision_trees/WODT.py
@@ -121,24 +127,25 @@ struct DataRepo {
         }
     }
 
-    inline void sortOnSelectedCategoricalField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice) {
+    INLINE void sortOnSelectedCategoricalField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, const std::deque<size_t>& Q, const std::vector<Nodes>& children) {
         for (const auto& var : vars) {
-            auto result = sortOnSelectedCategoricalField(var, begin, end);
-            if (result.second > choice.second) {
-                result.first.field = var;
-                std::swap(choice, result);
+            std::unordered_set<std::string> values_to_avoid;
+            for (const auto& idx : Q) {
+                if (children[idx].candidate.first.field == var) {
+                    values_to_avoid.emplace(std::get<std::string>(children[idx].candidate.first.value));
+                }
             }
-        }
-    }
-
-    inline void sortOnSelectedNumericField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice) {
-        for (const auto& var : vars) {
-            // The extention for these operand types comes from the paper
-            // of dtControl: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
-            for (size_t i = 0, N = (size_t)operand_type::LN; i<N; i++) {
-                auto obj = (operand_type)i;
-                auto result = sortOnSelectedNumericField(var, begin, end, obj);
-                if (result.second > choice.second) {
+            auto result = sortOnSelectedCategoricalField(var, begin, end, values_to_avoid);
+            if (result.second > choice.second) {
+                bool found = false;
+                for (const auto& ref : Q) {
+                    if ((result.first.field == children[ref].candidate.first.field) &&
+                        (result.first.value == children[ref].candidate.first.value)) {
+                        found=true;
+                        break;
+                    }
+                }
+                if (!found) {
                     result.first.field = var;
                     std::swap(choice, result);
                 }
@@ -146,9 +153,42 @@ struct DataRepo {
         }
     }
 
+    INLINE void sortOnSelectedNumericField(const std::unordered_set<std::string>& vars, size_t begin, size_t end, std::pair<dt_predicate, double>& choice, bool justSame, const std::deque<size_t>& Q, const std::vector<Nodes>& children) {
+        for (const auto& var : vars) {
+            // The extention for these operand types comes from the paper
+            // of dtControl: https://dl.acm.org/doi/abs/10.1145/3365365.3382220
+            std::unordered_set<double> values_to_avoid;
+            for (const auto& idx : Q) {
+                if (children[idx].candidate.first.field == var) {
+                    values_to_avoid.emplace(std::get<double>(children[idx].candidate.first.value));
+                }
+            }
+            size_t N = justSame ? 0 : (size_t)operand_type::LN;
+            for (size_t i = 0; i<=N; i++) {
+                auto obj = (operand_type)i;
+                auto result = sortOnSelectedNumericField(var, begin, end, obj, values_to_avoid);
+
+                if (result.second > choice.second) {
+                    bool found = false;
+                    for (const auto& ref : Q) {
+                        if ((result.first.field == children[ref].candidate.first.field) &&
+                                (result.first.value == children[ref].candidate.first.value)) {
+                            found=true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        result.first.field = var;
+                        std::swap(choice, result);
+                    }
+                }
+            }
+        }
+    }
+
 private:
-    inline
-    std::pair<dt_predicate,double> sortOnSelectedCategoricalField(const std::string& var, size_t begin, size_t end) {
+    INLINE
+    std::pair<dt_predicate,double> sortOnSelectedCategoricalField(const std::string& var, size_t begin, size_t end, const std::unordered_set<std::string>& avoidable_strings) {
         init_offsets(var, begin, end);
         std::sort(offsets.begin()+begin,
                   offsets.begin()+end,
@@ -163,7 +203,10 @@ private:
         std::vector<std::string> M;
         for (auto it = begin; it != end; it++) {
             auto off = offsets[it];
-            M.emplace_back(std::get<std::string>(records[off][fieldOffset[off]].second));
+            auto str = find_argument::findString(records[off], fieldOffset[off]);
+            if (!avoidable_strings.contains(str)) {
+                M.emplace_back(str);
+            }
         }
         std::sort( M.begin(), M.end() );
         M.erase( unique( M.begin(), M.end() ), M.end() );
@@ -176,7 +219,7 @@ private:
         }
         for (auto it = begin; it != end; it++) {
             auto off = offsets[it];
-            val.first = std::get<std::string>(records[off][fieldOffset[off]].second);
+            val.first = find_argument::findString(records[off], fieldOffset[off]);
             val.second = records_classes[off];
             N[val]++;
         }
@@ -227,7 +270,7 @@ private:
 
 
 
-    inline std::pair<dt_predicate, double> sortOnSelectedNumericField(const std::string& var, size_t begin, size_t end, operand_type ot = operand_type::SAME) {
+    INLINE std::pair<dt_predicate, double> sortOnSelectedNumericField(const std::string& var, size_t begin, size_t end, operand_type ot = operand_type::SAME, const std::unordered_set<double>&avoidables = {}) {
         init_offsets(var, begin, end);
         std::sort(offsets.begin()+begin,
                   offsets.begin()+end,
@@ -247,12 +290,15 @@ private:
             auto valx = do_operation(find_argument::findNumeric(records[i], fieldOffset[i]),ot);
             auto varx = do_operation(find_argument::findNumeric(records[ip1], fieldOffset[ip1]),ot);
             if (valx != varx) {
-                val.first = (valx+varx)/2.0;
-                for (int i = 0; i<=max_class_id; i++) {
-                    val.second = i;
-                    N[val] = nv.count(i);
+                double const avg = (valx+varx)/2.0;
+                val.first = avg;
+                if (!avoidables.contains(avg)) {
+                    for (int i = 0; i<=max_class_id; i++) {
+                        val.second = i;
+                        N[val] = nv.count(i);
+                    }
+                    M.insert(val.first);
                 }
-                M.insert(val.first);
             }
         }
         size_t i = offsets[end-1];
@@ -285,7 +331,7 @@ private:
         return predicate_w_score;
     }
 
-    inline void init_matrix(const std::vector<std::string>& numerical_dimensions,
+    INLINE void init_matrix(const std::vector<std::string>& numerical_dimensions,
                             optimize::Matrix& X_out, optimize::Vector& Y_out) {
         size_t colSize = numerical_dimensions.size();
         size_t N = records.size();
@@ -298,13 +344,13 @@ private:
             Y_out(i) = clazz;
             for (size_t j = 0; j<colSize; j++) {
                 const std::string& dimName = numerical_dimensions.at(j);
-                X_out(i,j) = std::get<double>(fa.find(records[i], dimName));
+                X_out(i,j) = (fa.findNumeric(records[i], dimName));
             }
         }
 //        std::cout << X_out << std::endl;
     }
 
-    inline void init_matrix(const std::set<size_t>& selected_records,
+    INLINE void init_matrix(const std::set<size_t>& selected_records,
                             const std::vector<std::string>& numerical_dimensions,
                             optimize::Matrix& X_out, optimize::Vector& Y_out) {
         if (selected_records.empty()) {
@@ -325,7 +371,7 @@ private:
                 Y_out(offsetElem) = clazz;
                 for (size_t j = 0; j<colSize; j++) {
                     const std::string& dimName = numerical_dimensions.at(j);
-                    X_out(offsetElem,j) = std::get<double>(fa.find(records[i], dimName));
+                    X_out(offsetElem,j) = (fa.findNumeric(records[i], dimName));
                 }
                 offsetElem++;
             }

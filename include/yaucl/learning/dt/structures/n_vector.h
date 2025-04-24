@@ -4,23 +4,23 @@
 
 #ifndef DT_N_VECTOR_H
 #define DT_N_VECTOR_H
-
+#include <yaucl/functional/cond_inline.h>
 #include <vector>
 
 struct n_vector {
 
-    inline void init(size_t nclasses) {
+    INLINE void init(size_t nclasses) {
         nclazzes = nclasses+1;
         n.resize(nclazzes, 0);
     }
-    inline void reset() {
+    INLINE void reset() {
         std::fill(n.begin(), n.end(), 0);
     }
-    inline void increment(size_t clazzNo) {
+    INLINE void increment(size_t clazzNo) {
         if (clazzNo <= nclazzes)
             n[clazzNo]++;
     }
-    inline size_t count(size_t clazzNo) const {
+    INLINE size_t count(size_t clazzNo) const {
         return n.at(clazzNo);
     }
 private:

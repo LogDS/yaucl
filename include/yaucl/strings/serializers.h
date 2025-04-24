@@ -27,6 +27,7 @@
 #include <map>
 #include <utility>
 #include <vector>
+#include <iomanip>
 
 template<typename T, typename V>
 std::ostream &operator<<(std::ostream &os, const std::unordered_map<T,V> &insertion) {
