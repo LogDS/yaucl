@@ -48,6 +48,70 @@ public:
     void Print(size_t num_rows);
 };
 
+struct local_zsv {
+    // void* zsv_opts_data;
+    FILE* f;
+    void* parser;
+};
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    /* Function declaration */
+    unsigned char open_csv_parser(const char* filename, struct local_zsv *zsv, char delimiter);
+    unsigned char has_csv_next(struct local_zsv *zsv);
+    size_t csv_cells_in_current_row(struct local_zsv *zsv);
+    size_t close_csv_parser(struct local_zsv *zsv);
+    size_t ith_csv_cell(struct local_zsv *zsv, size_t idx, unsigned char **str,  size_t* len,  char* quoted,
+  unsigned char* overwritten);
+
+#ifdef __cplusplus
+}
+#endif
+
+#include <filesystem>
+
+class SIMDParser {
+    struct local_zsv c_struct;
+    bool error;
+
+public:
+    SIMDParser(const std::filesystem::path& file, unsigned char delimiter) {
+        if (open_csv_parser(file.c_str(), &c_struct, delimiter) == EXIT_FAILURE)
+            error = true;
+        else
+            error = false;
+    }
+
+    ~SIMDParser() {
+        close_csv_parser(&c_struct);
+    }
+
+    bool getNextRow() {
+        return (has_csv_next(&c_struct) == EXIT_SUCCESS);
+    }
+
+    uint64_t nCells() {
+        return csv_cells_in_current_row(&c_struct);
+    }
+
+    template<bool perform_check = true>
+    std::pair<std::string_view, bool> getCell(uint64_t cell) {
+        if ((!perform_check) || (cell < nCells())) {
+            unsigned char *str = nullptr;
+            size_t len = 0;
+            char quoted = 0;
+            unsigned char overwritten = 0;
+            ith_csv_cell(&c_struct, cell, &str, &len, &quoted, &overwritten);
+            if (str && len) {
+                return {std::string_view{(const char*)str, len}, quoted ? true : false};
+            }
+        }
+        return {{nullptr, 0}, false};
+    }
+
+};
+
 table ReadCsv(const std::string &input_path);
 
 std::vector<int> GenerateRandomIntVector(int a, int b, int n_samples,
@@ -131,5 +195,7 @@ void Sample(size_t first, size_t last, const std::vector<T>& in, std::vector<T>&
         out.emplace_back(in.at(idx));
     }
 }
+
+
 
 #endif  // TWIGY_CORE_UTILS_H_

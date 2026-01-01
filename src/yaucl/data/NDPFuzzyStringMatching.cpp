@@ -117,7 +117,7 @@ void NDPFuzzyStringMatching::close() {
         gram_to_string_id_multimap.sort(availableMemory() / 4);
         pair1.string_id = 0;
         auto gram_to_string_idmultimap_primary = path / "gram_to_string_idmultimap.bin_primary";
-        gram_to_string_id_multimap_primary.open(gram_to_string_idmultimap_primary, std::filesystem::temp_directory_path());
+        gram_to_string_id_multimap_primary.open(gram_to_string_idmultimap_primary, tmp_path);
         for (const auto& cp : this->gramsInStringCount) {
             if (cp.first.empty()) {
                 memset((void*)pair1.two_gram, 0, 2);
@@ -158,18 +158,18 @@ void NDPFuzzyStringMatching::open() {
         strings.open(strings_path);
     }
     auto strings_to_n_2grams = path / "strings_to_n_2grams.bin";
-    string_id_to_number_2gram.open(strings_to_n_2grams, std::filesystem::temp_directory_path());
+    string_id_to_number_2gram.open(strings_to_n_2grams, tmp_path);
     auto strings_to_n_2gramsF = path / "strings_to_n_2gramsF.bin";
-    string_id_to_gram_frequency.open(strings_to_n_2gramsF , std::filesystem::temp_directory_path());
+    string_id_to_gram_frequency.open(strings_to_n_2gramsF , tmp_path);
     auto strings_to_n_2gramsF_primary = path / "strings_to_n_2gramsF.bin_primary";
-    string_id_to_gram_frequency_primary.open(strings_to_n_2gramsF_primary, std::filesystem::temp_directory_path());
+    string_id_to_gram_frequency_primary.open(strings_to_n_2gramsF_primary, tmp_path);
     auto gram_to_string_idmultimap = path / "gram_to_string_idmultimap.bin";
     auto gram_to_string_idmultimap_primary = path / "gram_to_string_idmultimap.bin_primary";
     if (std::filesystem::exists(gram_to_string_idmultimap_primary) && std::filesystem::exists(gram_to_string_idmultimap)) {
-        gram_to_string_id_multimap_primary.open(gram_to_string_idmultimap_primary, std::filesystem::temp_directory_path());
+        gram_to_string_id_multimap_primary.open(gram_to_string_idmultimap_primary, tmp_path);
         std::string gram;
         size_t prev = 0;
-        gram_to_string_id_multimap.open(gram_to_string_idmultimap, std::filesystem::temp_directory_path());
+        gram_to_string_id_multimap.open(gram_to_string_idmultimap, tmp_path);
         incrElement = gram_to_string_id_multimap.size();
         for (size_t i = 0, N = gram_to_string_id_multimap_primary.size(); i<N; i++) {
             auto& ref = gram_to_string_id_multimap_primary.get(i);
@@ -181,8 +181,8 @@ void NDPFuzzyStringMatching::open() {
         }
         gramsInStringCount[gram] = incrElement - prev;
     } else {
-        gram_to_string_id_multimap.open(gram_to_string_idmultimap, std::filesystem::temp_directory_path());
-        gram_to_string_id_multimap_primary.open(gram_to_string_idmultimap_primary, std::filesystem::temp_directory_path());
+        gram_to_string_id_multimap.open(gram_to_string_idmultimap, tmp_path);
+        gram_to_string_id_multimap_primary.open(gram_to_string_idmultimap_primary, tmp_path);
     }
     closed = false;
 }

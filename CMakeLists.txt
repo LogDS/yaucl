@@ -89,6 +89,7 @@ add_library(yaucl_stringutils OBJECT
         src/yaucl/strings/string_utils.cpp include/yaucl/strings/string_utils.h)
 
 add_library(yaucl_data OBJECT
+        src/yaucl/data/csv/zsv_cpp.c
         src/yaucl/data/csv/csv.cpp
         src/yaucl/data/new_iovec.cpp
         src/yaucl/data/MemoryMappingFile.cpp

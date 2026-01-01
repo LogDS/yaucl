@@ -103,35 +103,52 @@ void table::Print(size_t num_rows) {
 }
 
 table ReadCsv(const std::string &input_path) {
-    std::ifstream input_file(input_path);
-    aria::csv::CsvParser parser = aria::csv::CsvParser(input_file);
+    SIMDParser parser(input_path, ',');
+    // std::ifstream input_file(input_path);
+    // aria::csv::CsvParser parser = aria::csv::CsvParser(input_file);
 
     bool first_row = true;
     table data;
     std::vector<std::pair<std::string,union_minimal>> data_row;
     std::vector<std::string> headers;
 
-    for (auto &row : parser) {
+    while (/*auto &row : parser*/parser.getNextRow()) {
         if (first_row) {
             first_row = false;
-            for (auto &field : row) {
-                headers.push_back(field);
+            for (uint64_t i = 0, N = parser.nCells(); i<N; i++) {
+                auto field = parser.getCell(i).first;
+                headers.push_back(std::string(field));
             }
+            // for (auto &field : row) {
+            //     headers.push_back(field);
+            // }
             data.SetHeaders(headers);
             continue;
         }
 
-        size_t idx = 0;
-        for (auto &field : row) {
-            if (!field.empty()) {
+        // size_t idx = 0;
+        for (uint64_t idx = 0, N = parser.nCells(); idx<N; idx++) {
+            auto field = parser.getCell(idx).first;
+            if (field.data() && field.length()) {
                 try {
-                    data_row.emplace_back(headers.at(idx), std::stod(field));
+                    data_row.emplace_back(headers.at(idx), std::stod(std::string(field)));
                 } catch (...) {
-                    data_row.emplace_back(headers.at(idx), field);
+                    data_row.emplace_back(headers.at(idx), std::string(field));
                 }
             }
-            idx++;
+            headers.push_back(std::string(field));
         }
+
+        // for (auto &field : row) {
+        //     if (!field.empty()) {
+        //         try {
+        //             data_row.emplace_back(headers.at(idx), std::stod(field));
+        //         } catch (...) {
+        //             data_row.emplace_back(headers.at(idx), field);
+        //         }
+        //     }
+        //     idx++;
+        // }
         data.AddRow(data_row);
         data_row.clear();
     }

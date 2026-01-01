@@ -57,7 +57,7 @@ class NDPFuzzyStringMatching {
     FixedSizeReaderWriter<string_gram_frequency> string_id_to_gram_frequency;
     FixedSizeReaderWriter<size_t> string_id_to_gram_frequency_primary;
     FixedSizeReaderWriter<gram_to_string_id> gram_to_string_id_multimap, gram_to_string_id_multimap_primary;
-    std::filesystem::path path;
+    std::filesystem::path path, tmp_path;
     std::map<std::string, size_t> gramsInStringCount;
     bool closed;
     size_t incrElement;
@@ -72,8 +72,13 @@ class NDPFuzzyStringMatching {
 public:
     NDPFuzzyStringMatching(const std::filesystem::path& path): path{path} {
         newlyInputtedData = false;
-        if (!std::filesystem::exists(path))
+        tmp_path = path / "tmp";
+        if (!std::filesystem::exists(path)) {
             std::filesystem::create_directories(path);
+        }
+        if (!std::filesystem::exists(tmp_path)) {
+            std::filesystem::create_directories(tmp_path);
+        }
         open();
     }
 
@@ -89,8 +94,13 @@ public:
      */
     void open(const std::filesystem::path& p) {
         close();
-        if (!std::filesystem::exists(p))
+        tmp_path = p / "tmp";
+        if (!std::filesystem::exists(p)) {
             std::filesystem::create_directories(p);
+        }
+        if (!std::filesystem::exists(tmp_path)) {
+            std::filesystem::create_directories(tmp_path);
+        }
         this->path = p;
         open();
     }
