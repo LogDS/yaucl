@@ -497,10 +497,47 @@ std::vector<std::vector<int>> generate_all_indipendent_maximal_sets(
 // Equivalent of itertools.product(pool, repeat=repeat), iterated lazily.
 // Yields one empty tuple when repeat == 0 (as Python's product does).
 // Iteration stops as soon as fn returns true (short-circuit).
-template<typename T>
+// template<typename T>
+// static void forEachTuple(const std::vector<T>& pool,
+//                          std::size_t repeat,
+//                          const std::function<bool(const std::vector<T>&)>& fn) {
+//     if (repeat == 0) {
+//         std::vector<T> empty;
+//         fn(empty);
+//         return;
+//     }
+//     if (pool.empty()) {
+//         return;
+//     }
+//     std::vector<std::size_t> idx(repeat, 0);
+//     while (true) {
+//         std::vector<T> tuple;
+//         tuple.reserve(repeat);
+//         for (std::size_t i : idx) {
+//             tuple.push_back(pool[i]);
+//         }
+//         if (fn(tuple)) {
+//             return;
+//         }
+//         std::size_t p = repeat;
+//         bool carried = true;
+//         while (carried && p > 0) {
+//             --p;
+//             if (++idx[p] < pool.size()) {
+//                 carried = false;
+//             } else {
+//                 idx[p] = 0;
+//             }
+//         }
+//         if (carried) {
+//             return;
+//         }
+//     }
+// }
+template<typename T, typename F>
 static void forEachTuple(const std::vector<T>& pool,
                          std::size_t repeat,
-                         const std::function<bool(const std::vector<T>&)>& fn) {
+                         F fn) { // Rimosso std::function, ora è un template F
     if (repeat == 0) {
         std::vector<T> empty;
         fn(empty);
@@ -509,16 +546,26 @@ static void forEachTuple(const std::vector<T>& pool,
     if (pool.empty()) {
         return;
     }
+
     std::vector<std::size_t> idx(repeat, 0);
+
+    // Ottimizzazione 1: Allochiamo la tupla una sola volta FUORI dal ciclo
+    std::vector<T> tuple;
+    tuple.reserve(repeat);
+
     while (true) {
-        std::vector<T> tuple;
-        tuple.reserve(repeat);
+        // Ottimizzazione 2: .clear() svuota i dati ma conserva la memoria allocata nell'heap
+        tuple.clear();
         for (std::size_t i : idx) {
             tuple.push_back(pool[i]);
         }
+
+        // Cortocircuito
         if (fn(tuple)) {
             return;
         }
+
+        // Tua logica dell'odometro (Perfetta)
         std::size_t p = repeat;
         bool carried = true;
         while (carried && p > 0) {
@@ -534,6 +581,7 @@ static void forEachTuple(const std::vector<T>& pool,
         }
     }
 }
+
 
 // Equivalent of set(x) >= S, where x is a tuple of ints and S is a set of ints.
 template<typename T>
